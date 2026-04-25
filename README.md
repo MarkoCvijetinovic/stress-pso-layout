@@ -1,2 +1,9 @@
-# stress-pso-layout
-Stress-based graph layout with Particle Swarm Optimization (PSO) - a school project for Computational Intelligence course
+# Stress-Based Graph Layout with PSO
+
+This project implements graph drawing using stress minimization optimized with Particle Swarm Optimization (PSO).
+
+## Features
+- All-pairs shortest paths (NetworkX)
+- Stress objective
+- PSO optimizer (planned)
+- Visualization with matplotlib
