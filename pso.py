@@ -25,7 +25,7 @@ class Particle:
         self.c_cognitive = c_cognitive
 
         self.position = initialize_function()
-        self.velocity = np.zeros_like(self.position)
+        self.velocity = np.random.uniform(-1, 1, size=self.position.shape)
 
         self.value = self.f(self.position)
 
@@ -36,6 +36,8 @@ class Particle:
 
     def update_swarm_best(self):
         if self.value < Particle.swarm_best_value:
+
+            print("=====================CHANGE======================") 
             Particle.swarm_best_value = self.value
             Particle.swarm_best_position = self.position.copy()
 
@@ -44,22 +46,36 @@ class Particle:
         upper = self.bounds[:, 1]
         self.position = np.clip(self.position, lower, upper)
 
+    def apply_velocity_bounds(self, max_velocity=0.2):
+        self.velocity = np.clip(self.velocity, -max_velocity, max_velocity)
+
     def move(self):
         r_social = np.random.random(size=self.position.shape)
         r_cognitive = np.random.random(size=self.position.shape)
+        # r_social = np.random.random()
+        # r_cognitive = np.random.random()
 
-        social_component = self.c_social * r_social * (Particle.swarm_best_position - self.position) 
+        social_component = (
+            self.c_social
+            * r_social
+            * (Particle.swarm_best_position - self.position)
+        )
 
-        cognitive_component = self.c_cognitive * r_cognitive * (self.best_position - self.position)
+        cognitive_component = (
+            self.c_cognitive
+            * r_cognitive
+            * (self.best_position - self.position)
+        )
 
         inertia_component = self.c_inertia * self.velocity
 
         self.velocity = inertia_component + social_component + cognitive_component
-        self.position = self.position + self.velocity
 
+        self.position = self.position + self.velocity
         self.apply_bounds()
 
         self.value = self.f(self.position)
+        print(self.value)
 
         if self.value < self.best_value:
             self.best_value = self.value
@@ -67,6 +83,8 @@ class Particle:
 
         self.update_swarm_best()
 
+def initialize_graph_layout(G, nodes, scale=1.0):
+    return random_layout(G, nodes, scale=scale).flatten()
 
 def PSO(
     fitness_function: callable,
@@ -74,9 +92,9 @@ def PSO(
     bounds: np.ndarray,
     particle_count: int = 100,
     iterations: int = 100,
-    c_inertia: float = 0.2,
-    c_social: float = 0.1,
-    c_cognitive: float = 1.0,
+    c_inertia: float = 0.7,
+    c_social: float = 0.4,
+    c_cognitive: float = 1.4,
 ) -> tuple[np.ndarray, float]:
 
     Particle.swarm_best_position = None
@@ -96,10 +114,6 @@ def PSO(
     return Particle.swarm_best_position, Particle.swarm_best_value
 
 
-def initialize_graph_layout(G, nodes, scale=1.0):
-    return random_layout(G, nodes, scale=scale).flatten()
-
-
 if __name__ == "__main__":
     G = nx.karate_club_graph()
 
@@ -114,8 +128,8 @@ if __name__ == "__main__":
 
     initialize = partial(initialize_graph_layout, G, nodes, scale=1.0)
 
-    best_layout, best_value = PSO(fitness_function=fitness, initialize_function=initialize, 
-                                  bounds=bounds, particle_count=50, iterations=100)
+    best_layout, best_value = PSO(fitness_function=fitness, initialize_function=initialize, bounds=bounds,
+                                  particle_count=50, iterations=300)
 
     best_layout_2d = best_layout.reshape(-1, 2)
 

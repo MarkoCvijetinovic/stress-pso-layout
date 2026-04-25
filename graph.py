@@ -41,12 +41,15 @@ def compute_stress(
         Stress value.
     """
     positions = np.asarray(positions, dtype=float)
+
+    if positions.ndim == 1:
+        positions = positions.reshape(-1, 2)
     target_distances = np.asarray(target_distances, dtype=float)
 
     n = positions.shape[0]
 
     if positions.shape != (n, 2):
-        raise ValueError("positions must have shape (n, 2)")
+        raise ValueError("positions must have shape (n, 1) or (n, 2)")
 
     if target_distances.shape != (n, n):
         raise ValueError("target_distances must have shape (n, n)")
