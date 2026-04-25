@@ -1,7 +1,7 @@
 import numpy as np
 import networkx as nx
 from functools import partial
-from graph import compute_stress, all_paths, random_layout
+from graph import compute_stress, all_paths, random_layout, draw_layout
 
 
 class Particle:
@@ -36,8 +36,7 @@ class Particle:
 
     def update_swarm_best(self):
         if self.value < Particle.swarm_best_value:
-
-            print("=====================CHANGE======================") 
+            #print("=====================CHANGE======================") 
             Particle.swarm_best_value = self.value
             Particle.swarm_best_position = self.position.copy()
 
@@ -75,7 +74,7 @@ class Particle:
         self.apply_bounds()
 
         self.value = self.f(self.position)
-        print(self.value)
+        #print(self.value)
 
         if self.value < self.best_value:
             self.best_value = self.value
@@ -94,7 +93,7 @@ def PSO(
     iterations: int = 100,
     c_inertia: float = 0.7,
     c_social: float = 0.4,
-    c_cognitive: float = 1.4,
+    c_cognitive: float = 1.8,
 ) -> tuple[np.ndarray, float]:
 
     Particle.swarm_best_position = None
@@ -115,7 +114,16 @@ def PSO(
 
 
 if __name__ == "__main__":
-    G = nx.karate_club_graph()
+    #G = nx.cycle_graph(10)
+    #G = nx.path_graph(10)
+    #G = nx.karate_club_graph
+
+    G1 = nx.complete_graph(5)
+    G2 = nx.complete_graph(5)
+    G = nx.disjoint_union(G1, G2)
+    G.add_edge(2, 7)
+
+    #G = nx.grid_2d_graph(5,5)
 
     distances, nodes = all_paths(G)
 
@@ -132,6 +140,8 @@ if __name__ == "__main__":
                                   particle_count=50, iterations=300)
 
     best_layout_2d = best_layout.reshape(-1, 2)
+    #draw_layout(G, nodes, random_layout(G, nodes))
+    draw_layout(G, nodes, best_layout_2d)
 
     print("Best stress:", best_value)
     print("Best layout shape:", best_layout_2d.shape)
