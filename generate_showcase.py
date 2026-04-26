@@ -1,11 +1,12 @@
 import networkx as nx
+import numpy as np
 from graph import all_paths
 from pso import PSO
 from stress_layout_pso import stress_layout_pso_functions
 from visualization import save_layout_plot, make_gif, save_convergence_plot
 
-def make_layout_snapshot_callback(G, nodes, frame_dir, history):
-    def callback(iteration, best_position, best_value):
+def make_layout_snapshot_callback(G: nx.Graph, nodes: list, frame_dir: str, history: list):
+    def callback(iteration: int, best_position: np.ndarray, best_value: float):
         history.append((iteration, best_value))
 
         if iteration % 50 == 0 or iteration == 1:
@@ -42,7 +43,7 @@ if __name__ == "__main__":
     best_layout, best_value = PSO(
         fitness_function=fitness,
         initialize_function=initialize,
-        particle_count=100,
+        particle_count=50,
         iterations=4000,
         repair_function=repair,
         c_inertia=0.8,

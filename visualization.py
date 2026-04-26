@@ -18,13 +18,13 @@ def draw_layout(G: nx.Graph, nodes: list, positions: np.ndarray) -> None:
     plt.show()
 
 def save_layout_plot(
-    G,
-    nodes,
-    positions,
-    filepath,
-    title=None,
-    node_size=100,
-    with_labels=False,
+    G: nx.Graph,
+    nodes: list,
+    positions: np.ndarray,
+    filepath: str,
+    title: str = None,
+    node_size: int = 100,
+    with_labels: bool = False,
 ):
     positions = positions.reshape(-1, 2)
 
@@ -53,7 +53,7 @@ def save_layout_plot(
     plt.savefig(filepath, dpi=200)
     plt.close()
 
-def make_gif(frame_dir, output_path, duration=120):
+def make_gif(frame_dir: str, output_path: str, duration: int = 120):
     frame_files = sorted(
         f for f in os.listdir(frame_dir)
         if f.endswith(".png")
@@ -74,7 +74,7 @@ def make_gif(frame_dir, output_path, duration=120):
         loop=0,
     )
 
-def save_convergence_plot(history, output_path):
+def save_convergence_plot(history: list, output_path: str):
     iterations = [x[0] for x in history]
     values = [x[1] for x in history]
 

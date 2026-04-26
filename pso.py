@@ -8,7 +8,7 @@ RepairFunction = Callable[
     [np.ndarray, np.ndarray, int],
     tuple[np.ndarray, np.ndarray, int]
 ]
-CallbackFunction = Callable[[int, np.ndarray, np.ndarray], None]
+CallbackFunction = Callable[[int, np.ndarray, float], None]
 
 class Particle:
     swarm_best_position = None
