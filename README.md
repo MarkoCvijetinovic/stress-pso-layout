@@ -56,7 +56,8 @@ Contains graph/layout utilities:
 * optional normalization of graph distances
 * fast NumPy vectorized stress computation
 * random layout initialization
-* stress_layout_pso.py
+* 
+### stress_layout_pso.py
 Connects the abstract PSO implementation to the stress-layout problem.
 
 It provides:
