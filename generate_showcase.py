@@ -23,8 +23,8 @@ def make_layout_snapshot_callback(G, nodes, frame_dir, history):
     return callback
 
 if __name__ == "__main__":
-    G = nx.grid_2d_graph(8, 8)
-    graph_str = "grid_8x8"
+    G = nx.connected_caveman_graph(8, 8)
+    graph_str = "caveman_8x8"
 
     distances, nodes = all_paths(G)
 
@@ -42,7 +42,7 @@ if __name__ == "__main__":
     best_layout, best_value = PSO(
         fitness_function=fitness,
         initialize_function=initialize,
-        particle_count=50,
+        particle_count=100,
         iterations=4000,
         repair_function=repair,
         c_inertia=0.8,

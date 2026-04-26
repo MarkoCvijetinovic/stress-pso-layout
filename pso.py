@@ -114,6 +114,4 @@ def PSO(
                 best_value=Particle.swarm_best_value,
             )
 
-        print(f"Iteration {iteration + 1}: {Particle.swarm_best_value:.4f}")
-
     return Particle.swarm_best_position, Particle.swarm_best_value

@@ -58,7 +58,6 @@ def stress_layout_pso_functions(G: nx.Graph, distances: np.ndarray, nodes: list,
 
 if __name__ == "__main__":
     G = nx.cycle_graph(10)
-
     distances, nodes = all_paths(G)
 
     fitness, initialize, repair = stress_layout_pso_functions(G, distances, nodes)
@@ -71,7 +70,8 @@ if __name__ == "__main__":
         repair_function=repair,
         c_inertia=0.8,
         c_social=1.7,
-        c_cognitive=0.8
+        c_cognitive=0.8,
+        callback_function=lambda iteration, best_position, best_value: print(f"Iteration {iteration + 1}: {best_value:.4f}")
     )
 
     best_layout_2d = best_layout.reshape(-1, 2)
