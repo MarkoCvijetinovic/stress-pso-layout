@@ -31,7 +31,7 @@ The optimizer represents a graph layout as a flat vector:
 
 ## Visual Results
 
-<img width="400" height="400" alt="evolution" src="https://github.com/user-attachments/assets/1027553b-7f68-44b8-bd6a-9412846d44e5" /><img width="400" height="400" alt="evolution" src="https://github.com/user-attachments/assets/8d38d781-40e2-487d-b085-d542d73b57e1" />
+<img width=0.5 alt="evolution" src="https://github.com/user-attachments/assets/1027553b-7f68-44b8-bd6a-9412846d44e5" /><img width=0.5 alt="evolution" src="https://github.com/user-attachments/assets/8d38d781-40e2-487d-b085-d542d73b57e1" />
 
 
 ## Installation
