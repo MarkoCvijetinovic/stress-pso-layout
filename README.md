@@ -29,6 +29,11 @@ The optimizer represents a graph layout as a flat vector:
 └── README.md
 ```
 
+## Visual Results
+
+<img width="500" height="500" alt="evolution" src="https://github.com/user-attachments/assets/1027553b-7f68-44b8-bd6a-9412846d44e5" /><img width="500" height="500" alt="evolution" src="https://github.com/user-attachments/assets/8d38d781-40e2-487d-b085-d542d73b57e1" />
+
+
 ## Installation
 
 pip install numpy networkx matplotlib pillow
@@ -110,6 +115,10 @@ Graph distances are normalized before optimization. This significantly improves 
 Generated showcase files are stored in:
 
 data/showcase/
+
+Frames necessary for building gifs and converge plots are stored in:
+
+data/tmp/
 
 ## Current Features
 * Abstract global-best PSO
