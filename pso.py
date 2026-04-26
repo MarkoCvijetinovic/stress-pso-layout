@@ -16,6 +16,7 @@ class Particle:
         c_inertia: float,
         c_social: float,
         c_cognitive: float,
+        mutation: float,
     ):
         self.f = fitness_function
         self.bounds = bounds
@@ -33,6 +34,8 @@ class Particle:
         self.best_value = self.value
 
         self.update_swarm_best()
+        self.stagnation_counter = 0
+        self.mutation = mutation
 
     def update_swarm_best(self):
         if self.value < Particle.swarm_best_value:
@@ -48,11 +51,21 @@ class Particle:
     def apply_velocity_bounds(self, max_velocity=0.2):
         self.velocity = np.clip(self.velocity, -max_velocity, max_velocity)
 
+    def normalize_position(self):
+        coords = self.position.reshape(-1, 2)
+        coords -= coords.mean(axis=0)
+        self.position = coords.flatten()
+
+    def mutate(self):
+        if self.stagnation_counter > 30:
+            self.position += self.mutation * np.random.normal(0, 1, size=self.position.shape)
+            self.apply_bounds()
+            self.velocity = self.mutation * np.random.uniform(-0.5, 0.5, size=self.position.shape)
+            self.stagnation_counter = 0
+
     def move(self):
         r_social = np.random.random(size=self.position.shape)
         r_cognitive = np.random.random(size=self.position.shape)
-        # r_social = np.random.random()
-        # r_cognitive = np.random.random()
 
         social_component = (
             self.c_social
@@ -71,14 +84,21 @@ class Particle:
         self.velocity = inertia_component + social_component + cognitive_component
 
         self.position = self.position + self.velocity
+        self.normalize_position()
         self.apply_bounds()
 
         self.value = self.f(self.position)
-        #print(self.value)
+        print(self.value)
 
         if self.value < self.best_value:
             self.best_value = self.value
             self.best_position = self.position.copy()
+            self.stagnation_counter = 0
+        else:
+            self.stagnation_counter += 1
+
+        if(self.mutation > 0):
+            self.mutate()
 
         self.update_swarm_best()
 
@@ -91,16 +111,18 @@ def PSO(
     bounds: np.ndarray,
     particle_count: int = 100,
     iterations: int = 100,
-    c_inertia: float = 0.7,
-    c_social: float = 0.4,
-    c_cognitive: float = 1.8,
+    c_inertia: float = 0.8,
+    c_social: float = 1.7,
+    c_cognitive: float = 0.8,
+    mutation: float = 0.0
 ) -> tuple[np.ndarray, float]:
 
     Particle.swarm_best_position = None
     Particle.swarm_best_value = float("inf")
 
     particles = [
-        Particle(fitness_function, initialize_function, bounds, c_inertia, c_social, c_cognitive)
+        Particle(fitness_function, initialize_function, bounds, 
+                 c_inertia, c_social, c_cognitive, mutation)
         for _ in range(particle_count)
     ]
 
@@ -116,7 +138,7 @@ def PSO(
 if __name__ == "__main__":
     #G = nx.cycle_graph(10)
     #G = nx.path_graph(10)
-    #G = nx.karate_club_graph
+    #G = nx.karate_club_graph()
 
     G1 = nx.complete_graph(5)
     G2 = nx.complete_graph(5)

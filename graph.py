@@ -7,7 +7,7 @@ from typing import Literal
 WeightMode = Literal["constant", "inverse_square"]
 
 
-def all_paths(G: nx.Graph, nodes: list | None = None) -> tuple[np.ndarray, list]:
+def all_paths(G: nx.Graph, nodes: list | None = None, normalize_paths: bool = True) -> tuple[np.ndarray, list]:
     """
     Computes all-pairs shortest path distances.
 
@@ -19,6 +19,12 @@ def all_paths(G: nx.Graph, nodes: list | None = None) -> tuple[np.ndarray, list]
         nodes = list(G.nodes())
 
     distances = nx.floyd_warshall_numpy(G, nodelist=nodes)
+
+    if(normalize_paths):
+        finite = distances[np.isfinite(distances) & (distances > 0)]
+        scale = np.mean(finite)
+        distances = distances / scale
+
     return np.asarray(distances, dtype=float), nodes
 
 
@@ -26,6 +32,7 @@ def compute_stress(
     positions: np.ndarray,
     target_distances: np.ndarray,
     weights: WeightMode = "inverse_square",
+    normalize_stress: bool = True,
 ) -> float:
     """
     Computes graph drawing stress:
@@ -54,7 +61,8 @@ def compute_stress(
     if target_distances.shape != (n, n):
         raise ValueError("target_distances must have shape (n, n)")
 
-    stress = 0.0
+    stress_sum = 0.0
+    weight_sum = 0.0
 
     for i in range(n):
         for j in range(i + 1, n):
@@ -73,9 +81,15 @@ def compute_stress(
             else:
                 raise ValueError(f"Unknown weight mode: {weights}")
 
-            stress += w_ij * (euclidean_distance - d_ij) ** 2
+            stress_sum += w_ij * (euclidean_distance - d_ij) ** 2
+            weight_sum += w_ij
 
-    return float(stress)
+    stress_sum += w_ij * (euclidean_distance - d_ij) ** 2
+    
+    if(normalize_stress):
+        return stress_sum / weight_sum
+    return stress_sum
+
 
 
 def random_layout(G: nx.Graph, nodes: list, scale: float = 1.0) -> np.ndarray:
