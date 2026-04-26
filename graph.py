@@ -2,7 +2,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
 from typing import Literal
-
+from visualization import draw_layout
 
 WeightMode = Literal["constant", "inverse_square"]
 
@@ -80,19 +80,6 @@ def random_layout(G: nx.Graph, nodes: list, scale: float = 1.0) -> np.ndarray:
     """
     return np.random.uniform(-scale, scale, size=(len(nodes), 2))
 
-
-def draw_layout(G: nx.Graph, nodes: list, positions: np.ndarray) -> None:
-    """
-    Draws graph using positions stored as an n x 2 array.
-    """
-    pos_dict = {
-        node: positions[i]
-        for i, node in enumerate(nodes)
-    }
-
-    nx.draw(G, pos=pos_dict, with_labels=True, node_color="lightblue", edge_color="gray")
-    plt.axis("equal")
-    plt.show()
 
 if __name__ == "__main__":
     G = nx.karate_club_graph()
