@@ -50,7 +50,13 @@ if __name__ == "__main__":
     G.add_edge(2, 7)
     '''
 
-    G = nx.karate_club_graph()
+    #G = nx.karate_club_graph()
+    #G = nx.complete_graph(10)
+    #G = nx.path_graph(30)
+    #G = nx.cycle_graph(30)
+    #G = nx.grid_2d_graph(8, 8)
+    #G = nx.balanced_tree(4,3)
+    G = nx.connected_caveman_graph(10, 10)
 
     distances, nodes = all_paths(G)
 
@@ -65,7 +71,8 @@ if __name__ == "__main__":
 
 
     best_layout, best_value = PSO(fitness_function=fitness, initialize_function=initialize,
-                                  particle_count=50, iterations=300, repair_function=repair)
+                                  particle_count=50, iterations=4000, repair_function=repair,
+                                  c_inertia=0.8, c_social=1.7, c_cognitive=0.8)
 
     best_layout_2d = best_layout.reshape(-1, 2)
     draw_layout(G, nodes, best_layout_2d)

@@ -8,6 +8,7 @@ RepairFunction = Callable[
     [np.ndarray, np.ndarray, int],
     tuple[np.ndarray, np.ndarray, int]
 ]
+CallbackFunction = Callable[[int, np.ndarray, np.ndarray]]
 
 class Particle:
     swarm_best_position = None
@@ -84,12 +85,13 @@ class Particle:
 def PSO(
     fitness_function: FitnessFunction,
     initialize_function: InitializeFunction,
-    particle_count: int = 100,
-    iterations: int = 100,
-    c_inertia: float = 0.8,
-    c_social: float = 1.7,
-    c_cognitive: float = 0.8,
+    particle_count: int = 50,
+    iterations: int = 300,
+    c_inertia: float = 0.7,
+    c_social: float = 1.4,
+    c_cognitive: float = 1.4,
     repair_function: RepairFunction = None,
+    callback_function: CallbackFunction = None,
 ) -> tuple[np.ndarray, float]:
 
     Particle.swarm_best_position = None
@@ -104,6 +106,13 @@ def PSO(
     for iteration in range(iterations):
         for particle in particles:
             particle.move()
+
+        if callback_function is not None:
+            callback_function(
+                iteration=iteration + 1,
+                best_position=Particle.swarm_best_position,
+                best_value=Particle.swarm_best_value,
+            )
 
         print(f"Iteration {iteration + 1}: {Particle.swarm_best_value:.4f}")
 

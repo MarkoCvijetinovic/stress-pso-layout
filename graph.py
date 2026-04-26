@@ -27,7 +27,6 @@ def all_paths(G: nx.Graph, nodes: list | None = None, normalize_paths: bool = Tr
 
     return np.asarray(distances, dtype=float), nodes
 
-
 def compute_stress(
     positions: np.ndarray,
     target_distances: np.ndarray,
@@ -40,57 +39,40 @@ def compute_stress(
         sum_{i < j} w_ij (||x_i - x_j|| - d_ij)^2
 
     Args:
-        positions: n x 2 array of node coordinates
+        positions: n x 2 array of node coordinates, or flattened n x 1 array
         target_distances: n x n array of graph-theoretic distances
         weights: "constant" or "inverse_square"
 
     Returns:
         Stress value.
     """
+
     positions = np.asarray(positions, dtype=float)
 
     if positions.ndim == 1:
         positions = positions.reshape(-1, 2)
-    target_distances = np.asarray(target_distances, dtype=float)
 
-    n = positions.shape[0]
+    d = np.asarray(target_distances, dtype=float)
 
-    if positions.shape != (n, 2):
-        raise ValueError("positions must have shape (n, 1) or (n, 2)")
+    diff = positions[:, None, :] - positions[None, :, :]
+    euclidean = np.linalg.norm(diff, axis=2)
 
-    if target_distances.shape != (n, n):
-        raise ValueError("target_distances must have shape (n, n)")
+    mask = np.triu(np.isfinite(d) & (d > 0), k=1)
 
-    stress_sum = 0.0
-    weight_sum = 0.0
+    if weights == "constant":
+        w = np.ones_like(d)
+    elif weights == "inverse_square":
+        w = np.zeros_like(d)
+        w[mask] = 1.0 / (d[mask] ** 2)
+    else:
+        raise ValueError(f"Unknown weight mode: {weights}")
 
-    for i in range(n):
-        for j in range(i + 1, n):
-            d_ij = target_distances[i, j]
+    stress_terms = w[mask] * (euclidean[mask] - d[mask]) ** 2
 
-            # Skip disconnected pairs
-            if not np.isfinite(d_ij) or d_ij == 0:
-                continue
+    if normalize_stress:
+        return float(stress_terms.sum() / w[mask].sum())
 
-            euclidean_distance = np.linalg.norm(positions[i] - positions[j])
-
-            if weights == "constant":
-                w_ij = 1.0
-            elif weights == "inverse_square":
-                w_ij = 1.0 / (d_ij ** 2)
-            else:
-                raise ValueError(f"Unknown weight mode: {weights}")
-
-            stress_sum += w_ij * (euclidean_distance - d_ij) ** 2
-            weight_sum += w_ij
-
-    stress_sum += w_ij * (euclidean_distance - d_ij) ** 2
-    
-    if(normalize_stress):
-        return stress_sum / weight_sum
-    return stress_sum
-
-
+    return float(stress_terms.sum())
 
 def random_layout(G: nx.Graph, nodes: list, scale: float = 1.0) -> np.ndarray:
     """
