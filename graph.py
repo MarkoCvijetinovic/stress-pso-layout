@@ -94,7 +94,6 @@ def draw_layout(G: nx.Graph, nodes: list, positions: np.ndarray) -> None:
     plt.axis("equal")
     plt.show()
 
-
 if __name__ == "__main__":
     G = nx.karate_club_graph()
 

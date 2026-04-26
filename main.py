@@ -1,8 +1,9 @@
 import numpy as np
 import networkx as nx
 from functools import partial
-from graph import compute_stress, all_paths, random_layout, draw_layout
+from graph import compute_stress, all_paths, random_layout
 from pso import PSO
+from visualization import save_layout_plot
 
 def initialize_graph_layout(G, nodes, scale=1.0):
     return random_layout(G, nodes, scale=scale).flatten()
@@ -42,21 +43,24 @@ def graph_layout_repair(
 
     return position, velocity, stagnation_counter
 
-if __name__ == "__main__":
-    '''
-    G1 = nx.complete_graph(5)
-    G2 = nx.complete_graph(5)
-    G = nx.disjoint_union(G1, G2)
-    G.add_edge(2, 7)
-    '''
+def make_layout_snapshot_callback(G, nodes, output_dir, every=100):
+    def callback(iteration, best_position, best_value):
+        if iteration % every == 0 or iteration == 1:
+            filepath = f"{output_dir}/layout_iter_{iteration:05d}.png"
 
-    #G = nx.karate_club_graph()
-    #G = nx.complete_graph(10)
-    #G = nx.path_graph(30)
-    #G = nx.cycle_graph(30)
-    #G = nx.grid_2d_graph(8, 8)
-    #G = nx.balanced_tree(4,3)
-    G = nx.connected_caveman_graph(10, 10)
+            save_layout_plot(
+                G=G,
+                nodes=nodes,
+                positions=best_position,
+                filepath=filepath,
+                title=f"Iteration {iteration}, stress={best_value:.6f}",
+                with_labels=False,
+            )
+
+    return callback
+
+if __name__ == "__main__":
+    G = nx.grid_2d_graph(8, 8)
 
     distances, nodes = all_paths(G)
 
@@ -70,12 +74,21 @@ if __name__ == "__main__":
     repair = partial(graph_layout_repair, bounds=bounds)
 
 
-    best_layout, best_value = PSO(fitness_function=fitness, initialize_function=initialize,
-                                  particle_count=50, iterations=4000, repair_function=repair,
-                                  c_inertia=0.8, c_social=1.7, c_cognitive=0.8)
+    callback = make_layout_snapshot_callback(
+        G,
+        nodes,
+        output_dir="data/grid_8x8_showcase",
+        every=100,
+    )
 
-    best_layout_2d = best_layout.reshape(-1, 2)
-    draw_layout(G, nodes, best_layout_2d)
-
-    print("Best stress:", best_value)
-    print("Best layout shape:", best_layout_2d.shape)
+    best_layout, best_value = PSO(
+        fitness_function=fitness,
+        initialize_function=initialize,
+        particle_count=50,
+        iterations=4000,
+        repair_function=repair,
+        c_inertia=0.8,
+        c_social=1.7,
+        c_cognitive=0.8,
+        callback_function=callback,
+    )

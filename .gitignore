@@ -19,5 +19,6 @@ venv/
 .vscode/
 .idea/
 
-# Data (optional, if large)
-data/output/
+# Data 
+data/raw
+data/tmp
