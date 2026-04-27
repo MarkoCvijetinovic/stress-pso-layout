@@ -54,9 +54,19 @@ def compute_stress(
 
     d = np.asarray(target_distances, dtype=float)
 
+    # Compute all pairwise differences:
+    # positions[:, None, :] → (n, 1, 2)
+    # positions[None, :, :] → (1, n, 2)
+    # Result: diff[i, j] = x_i - x_j → shape (n, n, 2)
     diff = positions[:, None, :] - positions[None, :, :]
+
+    # Compute Euclidean distances for all pairs → shape (n, n)
     euclidean = np.linalg.norm(diff, axis=2)
 
+    # Build mask selecting valid pairs:
+    # - finite distances (ignore disconnected nodes)
+    # - d > 0 (ignore self-distances)
+    # - upper triangle only (i < j) to avoid duplicates
     mask = np.triu(np.isfinite(d) & (d > 0), k=1)
 
     if weights == "constant":
@@ -67,6 +77,8 @@ def compute_stress(
     else:
         raise ValueError(f"Unknown weight mode: {weights}")
 
+    # Compute stress contributions only for valid pairs
+    # euclidean[mask] and d[mask] are flattened vectors of valid pairs
     stress_terms = w[mask] * (euclidean[mask] - d[mask]) ** 2
 
     if normalize_stress:
