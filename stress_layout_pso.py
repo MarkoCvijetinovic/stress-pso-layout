@@ -74,7 +74,7 @@ def stress_layout_pso_functions(
     repair = partial(graph_layout_repair, bounds=bounds)
 
     fitness = None
-    
+
     if not batched: 
         fitness = partial(compute_stress, target_distances=distances, weights="inverse_square")
 
@@ -98,7 +98,7 @@ def stress_layout_pso_functions(
     return fitness, initialize, repair
 
 if __name__ == "__main__":
-    G = nx.balanced_tree(3, 4)
+    G = nx.grid_2d_graph(6, 6)
     distances, nodes = all_paths(G)
 
     fitness, initialize, repair = stress_layout_pso_functions(G, distances, nodes, batched=True)
@@ -107,10 +107,10 @@ if __name__ == "__main__":
         batched_fitness_function=fitness,
         initialize_function=initialize,
         particle_count=100,
-        iterations=5000,
+        iterations=1000,
         repair_function=repair,
         c_inertia=0.8,
-        c_social=1.7,
+        c_social=1.4,
         c_cognitive=0.8,
         callback_function=lambda iteration, best_position, best_value: print(f"Iteration {iteration + 1}: {best_value:.4f}")
     )

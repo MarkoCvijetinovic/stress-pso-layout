@@ -25,8 +25,8 @@ def make_layout_snapshot_callback(G: nx.Graph, nodes: list, frame_dir: str, hist
     return callback
 
 if __name__ == "__main__":
-    G = nx.balanced_tree(3, 4)
-    graph_str = "tree_3x4"
+    G = nx.grid_2d_graph(20, 20)
+    graph_str = "grid_20x20"
 
     distances, nodes = all_paths(G)
 
@@ -39,17 +39,17 @@ if __name__ == "__main__":
         nodes,
         frame_dir="data/tmp/" + graph_str + "_frames",
         history=history,
-        snapshot=100
+        snapshot=200
     )
 
     best_layout, best_value = BatchedPSO(
         batched_fitness_function=fitness,
         initialize_function=initialize,
-        particle_count=200,
-        iterations=8000,
+        particle_count=100,
+        iterations=20000,
         repair_function=repair,
         c_inertia=0.8,
-        c_social=1.7,
+        c_social=1.4,
         c_cognitive=0.8,
         callback_function=callback,
     )
