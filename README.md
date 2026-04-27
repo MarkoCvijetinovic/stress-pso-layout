@@ -36,7 +36,7 @@ The optimizer represents a graph layout as a flat vector:
 
 ## Installation
 
-pip install numpy networkx matplotlib pillow
+pip install numpy networkx matplotlib pillow torch
 
 ## Modules
 
