@@ -45,6 +45,16 @@ def graph_layout_repair(
 
 def stress_layout_pso_functions(G: nx.Graph, distances: np.ndarray, nodes: list, bound_size: float = 10.0
                     ) -> tuple[FitnessFunction, InitializeFunction, RepairFunction]:
+    '''
+    Builds fitness, initialize and repair functions required by PSO for Stress-Based Graph Layout problem
+
+    Args:
+        G: graph
+        distances: Distances between all pairs in G
+        nodes: List of nodes in G
+        bound_size: Used for clipping positions outside of [-bound_size / 2, bound_size / 2]
+
+    '''
     n = len(nodes)
     dim = 2 * n
 

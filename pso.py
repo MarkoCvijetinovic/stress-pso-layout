@@ -93,6 +93,28 @@ def PSO(
     repair_function: RepairFunction = None,
     callback_function: CallbackFunction = None,
 ) -> tuple[np.ndarray, float]:
+    """
+    Fully abstract Particle Swarm Optimization (PSO) algorithm.
+
+    Minimizes a given fitness function over a continuous search space.
+
+    Args:
+        fitness_function: Function mapping a position vector to a scalar value.
+        initialize_function: Function that returns an initial position vector for a particle.
+        particle_count: Number of particles in the swarm.
+        iterations: Number of optimization iterations.
+        c_inertia: Inertia coefficient (controls momentum of particles).
+        c_social: Social coefficient (attraction toward global best).
+        c_cognitive: Cognitive coefficient (attraction toward personal best).
+        repair_function: Optional function to enforce constraints or modify particles
+                         (e.g. clipping, normalization, mutation).
+        callback_function: Optional function called once per iteration with
+                           (iteration, best_position, best_value).
+
+    Returns:
+        best_position: Best position found by the swarm.
+        best_value: Fitness value at the best position.
+    """
 
     Particle.swarm_best_position = None
     Particle.swarm_best_value = float("inf")
