@@ -1,9 +1,12 @@
 import numpy as np
 import networkx as nx
+import torch
 from functools import partial
 from graph import compute_stress, all_paths, random_layout
 from pso import PSO, FitnessFunction, InitializeFunction, RepairFunction
+from batched_pso import BatchedPSO, BatchedFitnessFunction
 from visualization import draw_layout
+from graph_torch import make_stress_tensors, compute_stress_torch
 
 def initialize_graph_layout(G: nx.Graph, nodes: list, scale=1.0):
     return random_layout(G, nodes, scale=scale).flatten()
@@ -67,16 +70,32 @@ def stress_layout_pso_functions(G: nx.Graph, distances: np.ndarray, nodes: list,
     return fitness, initialize, repair
 
 if __name__ == "__main__":
-    G = nx.cycle_graph(10)
+    G = nx.balanced_tree(3, 4)
     distances, nodes = all_paths(G)
 
-    fitness, initialize, repair = stress_layout_pso_functions(G, distances, nodes)
+    _, initialize, repair = stress_layout_pso_functions(G, distances, nodes)
 
-    best_layout, best_value = PSO(
-        fitness_function=fitness,
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+    d_torch, w_torch, mask = make_stress_tensors(
+        distances,
+        weights="inverse_square",
+        device=device,
+    )
+
+    fitness = lambda position: compute_stress_torch(
+        position,
+        d_torch,
+        w_torch,
+        mask,
+        normalize_stress=True,
+    )
+
+    best_layout, best_value = BatchedPSO(
+        batched_fitness_function=fitness,
         initialize_function=initialize,
-        particle_count=50,
-        iterations=300,
+        particle_count=100,
+        iterations=6000,
         repair_function=repair,
         c_inertia=0.8,
         c_social=1.7,
