@@ -1,6 +1,6 @@
 # Stress-Based Graph Layout with Particle Swarm Optimization
 
-This project implements stress-based graph drawing using Particle Swarm Optimization (PSO). The PSO implementation is abstract and problem-independent, while graph-specific logic is separated into its own module.
+This project implements stress-based graph drawing using Particle Swarm Optimization (PSO). The PSO implementation is abstract and problem-independent, while graph-specific logic is separated into its own module. It also features batched versions of algorithms that can be ran on GPU with torch for improved performance.
 
 ## Overview
 
@@ -40,23 +40,26 @@ pip install numpy networkx matplotlib pillow
 
 ## Modules
 
-### pso.py
+### pso.py & batched_pso.py
 
-Contains a fully abstract PSO implementation. It only requires:
+`pso.py` contains a fully abstract PSO implementation. It only requires:
 * fitness_function(position) -> float
 * initialize_function() -> np.ndarray
-* optional repair_function(position, velocity, stagnation_counter) -> allows clipping to boundary, mutating, printing particles...
+* optional repair_function(position, velocity, stagnation_counter) -> for clipping, normalization, mutation, or other constraint handling
 * optional callback_function(iteration, best_position, best_value)
 This makes the optimizer reusable for other problems.
 
-### graph.py
+`batched_pso.py` implements a faster batched variant. Instead of evaluating particles one at a time, it stacks all particle positions into a single array and evaluates the whole swarm at once
+
+### graph.py & batched_graph.py
 
 Contains graph/layout utilities:
 * all-pairs shortest paths using NetworkX Floyd-Warshall
 * optional normalization of graph distances
 * fast NumPy vectorized stress computation
 * random layout initialization
-* 
+* optional Torch-based batched stress computation
+  
 ### stress_layout_pso.py
 Connects the abstract PSO implementation to the stress-layout problem.
 
@@ -66,6 +69,8 @@ It provides:
 * position bounds
 * optional velocity clipping and mutation
 * stress_layout_pso_functions(...), a convenient starting point for experiments
+
+The function stress_layout_pso_functions(...) can return either a normal scalar fitness function or a batched fitness function:
 
 ### visualization.py
 
@@ -81,7 +86,7 @@ It can generate:
 * layout evolution GIF
 * final layout image
 * convergence plot
-  
+
 ## Example Usage
 
 Run a basic stress-layout experiment:
@@ -130,11 +135,11 @@ data/tmp/
 * Optional mutation and velocity clipping
 * Convergence plots
 * GIF generation for layout evolution
+* Batch evaluation of particles
 
 ## Possible Extensions
 * Local-best or multi-leader PSO
 * Approximate/sampled stress for larger graphs
 * Comparison with NetworkX spring layout
 * Parameter studies across graph families
-* Batch evaluation of particles
 
