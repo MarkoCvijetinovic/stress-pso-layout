@@ -6,7 +6,7 @@ from graph import compute_stress, all_paths, random_layout
 from pso import PSO, FitnessFunction, InitializeFunction, RepairFunction
 from batched_pso import BatchedPSO, BatchedFitnessFunction
 from visualization import draw_layout
-from graph_torch import make_stress_tensors, compute_stress_torch
+from batched_graph import make_stress_tensors, compute_stress_torch
 
 def initialize_graph_layout(G: nx.Graph, nodes: list, scale=1.0):
     return random_layout(G, nodes, scale=scale).flatten()
@@ -46,16 +46,23 @@ def graph_layout_repair(
 
     return position, velocity, stagnation_counter
 
-def stress_layout_pso_functions(G: nx.Graph, distances: np.ndarray, nodes: list, bound_size: float = 10.0
-                    ) -> tuple[FitnessFunction, InitializeFunction, RepairFunction]:
+def stress_layout_pso_functions(
+    G: nx.Graph, 
+    distances: np.ndarray, 
+    nodes: list, 
+    bound_size: float = 10.0, 
+    batched=False
+) -> tuple[callable, InitializeFunction, RepairFunction]:
     '''
     Builds fitness, initialize and repair functions required by PSO for Stress-Based Graph Layout problem
+    It can build fitness functions for PSO or BatchedPSO depending on the argument "batched"
 
     Args:
         G: graph
         distances: Distances between all pairs in G
         nodes: List of nodes in G
         bound_size: Used for clipping positions outside of [-bound_size / 2, bound_size / 2]
+        batched: If false returns FitnessFunction, otherwise BatchedFitnessFunction
 
     '''
     n = len(nodes)
@@ -63,9 +70,30 @@ def stress_layout_pso_functions(G: nx.Graph, distances: np.ndarray, nodes: list,
 
     bounds = np.array([[-bound_size / 2, bound_size / 2]] * dim)
 
-    fitness = partial(compute_stress, target_distances=distances, weights="inverse_square")
     initialize = partial(initialize_graph_layout, G, nodes, scale=1.0)
     repair = partial(graph_layout_repair, bounds=bounds)
+
+    fitness = None
+    
+    if not batched: 
+        fitness = partial(compute_stress, target_distances=distances, weights="inverse_square")
+
+    else:
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+        d_torch, w_torch, mask = make_stress_tensors(
+            distances,
+            weights="inverse_square",
+            device=device,
+        )
+
+        fitness = lambda position: compute_stress_torch(
+            position,
+            d_torch,
+            w_torch,
+            mask,
+            normalize_stress=True,
+        )
 
     return fitness, initialize, repair
 
@@ -73,29 +101,13 @@ if __name__ == "__main__":
     G = nx.balanced_tree(3, 4)
     distances, nodes = all_paths(G)
 
-    _, initialize, repair = stress_layout_pso_functions(G, distances, nodes)
-
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-
-    d_torch, w_torch, mask = make_stress_tensors(
-        distances,
-        weights="inverse_square",
-        device=device,
-    )
-
-    fitness = lambda position: compute_stress_torch(
-        position,
-        d_torch,
-        w_torch,
-        mask,
-        normalize_stress=True,
-    )
+    fitness, initialize, repair = stress_layout_pso_functions(G, distances, nodes, batched=True)
 
     best_layout, best_value = BatchedPSO(
         batched_fitness_function=fitness,
         initialize_function=initialize,
         particle_count=100,
-        iterations=6000,
+        iterations=5000,
         repair_function=repair,
         c_inertia=0.8,
         c_social=1.7,

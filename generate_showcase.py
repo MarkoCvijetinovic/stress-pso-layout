@@ -2,14 +2,15 @@ import networkx as nx
 import numpy as np
 from graph import all_paths
 from pso import PSO
+from batched_pso import BatchedPSO
 from stress_layout_pso import stress_layout_pso_functions
 from visualization import save_layout_plot, make_gif, save_convergence_plot
 
-def make_layout_snapshot_callback(G: nx.Graph, nodes: list, frame_dir: str, history: list):
+def make_layout_snapshot_callback(G: nx.Graph, nodes: list, frame_dir: str, history: list, snapshot: int = 50):
     def callback(iteration: int, best_position: np.ndarray, best_value: float):
         history.append((iteration, best_value))
 
-        if iteration % 50 == 0 or iteration == 1:
+        if iteration % snapshot == 0 or iteration == 1:
             filepath = f"{frame_dir}/layout_iter_{iteration:05d}.png"
 
             save_layout_plot(
@@ -24,12 +25,12 @@ def make_layout_snapshot_callback(G: nx.Graph, nodes: list, frame_dir: str, hist
     return callback
 
 if __name__ == "__main__":
-    G = nx.connected_caveman_graph(8, 8)
-    graph_str = "caveman_8x8"
+    G = nx.balanced_tree(3, 4)
+    graph_str = "tree_3x4"
 
     distances, nodes = all_paths(G)
 
-    fitness, initialize, repair = stress_layout_pso_functions(G, distances, nodes)
+    fitness, initialize, repair = stress_layout_pso_functions(G, distances, nodes, batched=True)
 
     history = []
 
@@ -38,13 +39,14 @@ if __name__ == "__main__":
         nodes,
         frame_dir="data/tmp/" + graph_str + "_frames",
         history=history,
+        snapshot=100
     )
 
-    best_layout, best_value = PSO(
-        fitness_function=fitness,
+    best_layout, best_value = BatchedPSO(
+        batched_fitness_function=fitness,
         initialize_function=initialize,
-        particle_count=50,
-        iterations=4000,
+        particle_count=200,
+        iterations=8000,
         repair_function=repair,
         c_inertia=0.8,
         c_social=1.7,
