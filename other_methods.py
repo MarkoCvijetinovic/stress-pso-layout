@@ -5,6 +5,8 @@ from stress_layout_pso import stress_layout_pso_functions
 from visualization import draw_layout
 import matplotlib.pyplot as plt
 from graph import compute_stress
+from typing import Callable, List
+import time
 
 def batched_brute_force_layout(
     batched_fitness_function,
@@ -41,6 +43,19 @@ def batched_brute_force_layout(
             callback_function(checked, best_position, best_value)
 
     return best_position, best_value
+
+def evaluate_optimizer(optimizer: Callable[[nx.Graph], float], Graphs: List[nx.Graph]) -> List[tuple[float, int]]:
+    if Graphs is None:
+        Graphs = [nx.path_graph(30), nx.cycle_graph(30), nx.grid_2d_graph(8, 8), nx.connected_caveman_graph(8, 8), nx.barabasi_albert_graph(150, 3)]
+
+    results = []
+    for G in Graphs:
+        start_time = time.perf_counter()
+        accuracy = optimizer(G)
+        end_time = time.perf_counter()
+        results.append(accuracy, end_time - start_time)
+    
+    return results
 
 if __name__ == "__main__":
     G = nx.connected_caveman_graph(10, 10)
