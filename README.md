@@ -9,7 +9,7 @@ The layout objective is classical graph stress:
 $$\mathrm{Stress}(X) = \sum_{i < j} w_{ij}(\|x_i - x_j\| - d_{ij})^2$$
 where:
 
-- $$\(x_i, x_j\)$$ are 2D node positions,
+- $$x_i$$ and  $$x_j$$ are 2D positions of nodes $$i$$ and  $$j$$
 - $$d_{ij}$$ is the shortest-path distance between nodes,
 - $$w_{ij}$$ is usually $$1 / d_{ij}^2$$.
 
@@ -136,10 +136,10 @@ data/tmp/
 * Convergence plots
 * GIF generation for layout evolution
 * Batch evaluation of particles
+* Comparison with NetworkX Kamada-Kawai and spring layouts
 
 ## Possible Extensions
 * Local-best or multi-leader PSO
 * Approximate/sampled stress for larger graphs
-* Comparison with NetworkX spring layout
 * Parameter studies across graph families
 
